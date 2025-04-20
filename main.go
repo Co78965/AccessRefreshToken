@@ -11,11 +11,12 @@ import (
 )
 
 func Init() {
-	if err := handlers.Init(); err != nil {
-		log.Fatalf("[ERROR] func: main.init() --> ... --> database.Connect() | error: %v\n", err)
-	}
 	if err := godotenv.Load(); err != nil {
 		log.Fatalf("[ERROR] func: main.init() --> godotenv.Load() | error: %v\n", err)
+	}
+
+	if err := handlers.Init(); err != nil {
+		log.Fatalf("[ERROR] func: main.init() --> ... --> database.Connect() | error: %v\n", err)
 	}
 }
 

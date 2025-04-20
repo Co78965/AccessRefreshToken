@@ -1,14 +1,15 @@
 package database
 
 import (
-	"database/sql"
 	"fmt"
+	"log"
 	"os"
 
+	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 )
 
-var DB *sql.DB
+var DB *sqlx.DB
 
 type DataBase struct {
 	Hash      []byte `json:"hash_refresh"`
@@ -19,23 +20,22 @@ type DataBase struct {
 
 func Connect() error {
 	var err error
-	connStr := "host=%s port=%d user=%s password=%s dbname=%s sslmode=disable"
-
+	connStr := ""
 	params := map[string]map[string]string{
 		"host": {
-			"param":   "HOST",
+			"param":   "DBHOST",
 			"default": "::1",
 		},
 		"port": {
-			"param":   "PORT",
+			"param":   "DBPORT",
 			"default": "5432",
 		},
 		"user": {
-			"param":   "USER",
+			"param":   "DBUSER",
 			"default": "postgres",
 		},
 		"password": {
-			"param":   "PASSWORD",
+			"param":   "DBPASSWORD",
 			"default": "postgres",
 		},
 		"dbname": {
@@ -43,20 +43,21 @@ func Connect() error {
 			"default": "postgres",
 		},
 		"sslmode": {
-			"param":   "SSLMODE",
+			"param":   "SSLMODEDB",
 			"default": "disable",
 		},
 	}
 
 	for paramConn, paramEnv := range params {
+		log.Println("[INFO] paramConn and paramEnv and paramEnv['param']: ", paramConn, paramEnv, paramEnv["param"])
 		param, exists := os.LookupEnv(paramEnv["param"])
 		if !exists {
 			param = paramEnv["default"]
 		}
 		connStr += fmt.Sprintf("%s=%s ", paramConn, param)
 	}
-
-	DB, err = sql.Open("postgres", connStr)
+	log.Println("[INFO] db connect: ", connStr)
+	DB, err = sqlx.Connect("postgres", connStr)
 	return err
 }
 
@@ -66,13 +67,6 @@ func (db *DataBase) IsExcist() (bool, error) {
 }
 
 func (db *DataBase) AddToken() error {
-	result, err := DB.Exec("insert into Products (model, company, price) values ('iPhone X', $1, $2)", "Apple", 72000)
 
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Println(result.LastInsertId()) // не поддерживается
-	fmt.Println(result.RowsAffected()) // количество добавленных строк
 	return nil
 }
