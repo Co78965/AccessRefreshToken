@@ -2,7 +2,6 @@ package token
 
 import (
 	"AccessRefreshToken/database"
-	"fmt"
 	"log"
 	"math/rand"
 	"os"
@@ -76,7 +75,7 @@ func getTimeAlive(typeToken string) time.Duration {
 	return time.Duration(timeAlive) * durationsType[durationType]
 }
 
-func generateRefreshToken() (string, error) {
+func generateRefreshTokenString() (string, error) {
 	lenghtStr, excist := os.LookupEnv("LENGHT_REFRESH_TOKEN")
 	if !excist {
 		lenghtStr = "64"
@@ -148,9 +147,7 @@ func (t *TokensInfo) GenerateRefreshToken() error {
 	dbInfo.Guid = t.Guid
 	dbInfo.TimeAlive = time.Now().Add(getTimeAlive("refresh")).Unix()
 
-	t.TokenRefresh, err = generateRefreshToken()
-
-	fmt.Println("[INFO] token refresh: ", t.TokenRefresh)
+	t.TokenRefresh, err = generateRefreshTokenString()
 
 	if err != nil {
 		log.Printf("[ERROR] func: GenerateRefreshToken() --> generateRefreshToken() | error: %v\n", err)

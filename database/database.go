@@ -2,7 +2,6 @@ package database
 
 import (
 	"fmt"
-	"log"
 	"os"
 
 	"github.com/jmoiron/sqlx"
@@ -12,10 +11,10 @@ import (
 var DB *sqlx.DB
 
 type DataBase struct {
-	Hash      []byte `json:"hash_refresh"`
-	TimeAlive int64  `json:"time_alive"`
-	IpAddress string `json:"ip_address"`
-	Guid      string `json:"guid"`
+	Hash      []byte `json:"hash_refresh" db:"hash"`
+	TimeAlive int64  `json:"time_alive" db:"time_alive"`
+	IpAddress string `json:"ip_address" db:"ip"`
+	Guid      string `json:"guid" db:"guid"`
 }
 
 func Connect() error {
@@ -49,24 +48,21 @@ func Connect() error {
 	}
 
 	for paramConn, paramEnv := range params {
-		log.Println("[INFO] paramConn and paramEnv and paramEnv['param']: ", paramConn, paramEnv, paramEnv["param"])
 		param, exists := os.LookupEnv(paramEnv["param"])
 		if !exists {
 			param = paramEnv["default"]
 		}
 		connStr += fmt.Sprintf("%s=%s ", paramConn, param)
 	}
-	log.Println("[INFO] db connect: ", connStr)
 	DB, err = sqlx.Connect("postgres", connStr)
 	return err
 }
 
 func (db *DataBase) IsExcist() (bool, error) {
-
 	return false, nil
 }
 
 func (db *DataBase) AddToken() error {
-
-	return nil
+	_, err := DB.NamedExec(`INSERT INTO refresh_tokens (guid, hash, ip, time_alive) VALUES (:guid, :hash, :ip, :time_alive)`, db)
+	return err
 }
