@@ -3,8 +3,10 @@ package notify
 import (
 	testusersmanage "AccessRefreshToken/test_users_manage"
 	"crypto/tls"
+	"errors"
 	"fmt"
 	"log"
+	"os"
 
 	"gopkg.in/gomail.v2"
 )
@@ -45,7 +47,13 @@ func (n *Notifyer) Notify(guid string, ip string) error {
 func sendEmail(email, text string, title string) error {
 	m := gomail.NewMessage()
 
-	m.SetHeader("From", "lyugaev2003@gmail.com")
+	emailSmtp, IsExcist := os.LookupEnv("EMAIL_SMTP")
+
+	if !IsExcist {
+		return errors.New("must add email for smtp notify")
+	}
+
+	m.SetHeader("From", emailSmtp)
 	m.SetHeader("To", email)
 
 	m.SetHeader("Subject", title)
