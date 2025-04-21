@@ -64,7 +64,7 @@ func getTimeAlive(typeToken string) time.Duration {
 		"refresh": {
 			"param":            "TIMEALIVE_REFRESH_TOKEN",
 			"default":          "10",
-			"duration":         "TYPE_REFRESH_ACCESS",
+			"duration":         "TYPE_DURATION_REFRESH",
 			"default_duration": "hour",
 		},
 	}
