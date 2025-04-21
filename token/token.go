@@ -124,6 +124,10 @@ func newValidator(database IValidator) *Validator {
 	return &Validator{validator: database}
 }
 
+func (t *TokensInfo) GetGuid() string {
+	return t.Guid
+}
+
 func (t *TokensInfo) GetIpAddress() string {
 	return t.IpAddress
 }

@@ -1,15 +1,21 @@
 package handlers
 
 import (
+	"AccessRefreshToken/notify"
 	"AccessRefreshToken/token"
 	"encoding/json"
 	"log"
 	"net/http"
 )
 
+type INotify interface {
+	Notify(guid string, ip string) error
+}
+
 type ITokenRefresh interface {
 	IsValidRefreshToken() (int, error)
 	GetIpAddress() string
+	GetGuid() string
 }
 
 type IToken interface {
@@ -19,6 +25,11 @@ type IToken interface {
 	GetTokenAccess() string
 	GetTokenRefresh() string
 }
+
+type Notifyer struct {
+	notifyer INotify
+}
+
 type TokenManager struct {
 	manager ITokenRefresh
 }
@@ -37,6 +48,10 @@ func newTokensManager(tokenGenerator ITokenRefresh) *TokenManager {
 
 func newTokensGenerator(tokenGenerator IToken) *TokensGenerator {
 	return &TokensGenerator{generator: tokenGenerator}
+}
+
+func newNotifyer(notifyer INotify) *Notifyer {
+	return &Notifyer{notifyer: notifyer}
 }
 
 func generateTokens(tokensInfo IToken) ([]byte, error) {
@@ -87,6 +102,7 @@ func GetTokens(w http.ResponseWriter, r *http.Request) {
 }
 
 func RefreshTokens(w http.ResponseWriter, r *http.Request) {
+	notifyerEmail := &notify.Notifyer{}
 	tokensInfo := &token.TokensInfo{}
 
 	err := json.NewDecoder(r.Body).Decode(&tokensInfo)
@@ -105,7 +121,13 @@ func RefreshTokens(w http.ResponseWriter, r *http.Request) {
 
 	switch isValid {
 	case token.DIFFERENT_IP:
-		//сделать передачу сообщения
+		notifyer := newNotifyer(notifyerEmail)
+		err := notifyer.notifyer.Notify(tokenManager.manager.GetGuid(), r.RemoteAddr)
+
+		if err != nil {
+			log.Printf("[ERROR] func: RefreshTokens --> Notify | error: %v\n", err)
+		}
+
 		code = http.StatusUnauthorized
 		response = []byte("ip addresses are not similar")
 	case token.ERROR:
